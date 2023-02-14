@@ -164,7 +164,7 @@ public class CcmPidpAdapter extends RouteBuilder {
 
   }
 
-  private void processCaseUserAccountCreated_avro_serdes() throws Exception {
+  private void processCaseUserAccountCreated() throws Exception {
     // use method name as route id
     String routeId = new Object() {}.getClass().getEnclosingMethod().getName();
 
@@ -179,11 +179,10 @@ public class CcmPidpAdapter extends RouteBuilder {
     )
     .routeId(routeId)
     .streamCaching() // https://camel.apache.org/manual/faq/why-is-my-message-body-empty.html
-    .log(LoggingLevel.DEBUG, "Received user creation event from PIDP ...  Headers = '${headers}'")
-    .log("Received user creation event from PIDP 1...")
-    //.log("Received user creation event from PIDP 2...")
-    //.log("Received user creation event from PIDP 3... body = '${body}'.")
-    //.log("(DEBUG) PIDP payload: ${body}")
+    //.log(LoggingLevel.DEBUG, "Received user creation event from PIDP ...  Headers = '${headers}'")
+    .log("Received user creation event from PIDP 1... body = '${body}'.")
+    .log("Received user creation event from PIDP 2...")
+    .log("(DEBUG) PIDP payload: ${body}")
     //.log(LoggingLevel.DEBUG,"PIDP payload: ${body}")
     .setProperty("event_topic", simple("{{kafka.topic.caseusers.name}}"))
     .unmarshal().json(JsonLibrary.Jackson, PidpUserModificationEvent.class)
@@ -232,7 +231,7 @@ public class CcmPidpAdapter extends RouteBuilder {
     ;
   }
 
-  private void processCaseUserAccountCreated() throws Exception {
+  private void processCaseUserAccountCreated_plain() throws Exception {
     // use method name as route id
     String routeId = new Object() {}.getClass().getEnclosingMethod().getName();
 
