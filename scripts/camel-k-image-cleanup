@@ -1,0 +1,59 @@
+#!/bin/bash
+
+ns_set="cef5dd"
+
+if [ "$1" = "" ]; then
+   echo "Error.  Environment must be specified"
+   echo "Usage: $0 <dev|test|prod>\n"
+   return 1
+fi
+
+if [ "$1" = "dev" ]; then
+    env="dev"
+elif [ "$1" = "test" ]; then
+    env="test"
+elif [ "$1" = "prod" ]; then
+    env="prod"
+else
+    env=""
+fi
+
+if [ "$env" = "" ]; then
+   echo "Error.  Invalid environment specified: $1"
+   echo "Usage: $0 <dev|test|prod>\n"
+   return 1
+else
+   ns="$ns_set-$env"
+fi
+
+if [ "$env" = "prod" ]; then
+    echo "WARNING:  You are about to execute $0 in PRODUCTION.  Are you sure? (y/n)"
+    read answer
+    if [ "$answer" != "y" ]; then
+        echo "Aborting deployment."
+        return 1
+    else
+        echo "Proceeding in PRODUCTION...\n"
+    fi
+fi
+
+# Get the list of camel-k image streams
+image_list=($(oc -n $ns get is | grep camel-k | awk '{print $1}'))
+
+# Get the list of in-use camel-k kits
+in_use_camel_k_list=$(kamel -n $ns get)
+
+# Loop through the list of images
+for image in $image_list
+do
+  echo "Checking $image ..."
+  # Check if the image is in use by a camel-k integration
+  if [[ $in_use_camel_k_list == *"$image_name"* ]]; then
+    echo "$image is in use by a camel-k integration; skip."
+  else
+    echo "$image is NOT in use by a camel-k integration; okay to delete."
+    echo "Will execute: oc delete image $image -n $ns"
+    # oc delete image $image -n $ns
+  fi
+done
+echo "$0 completed.\n"

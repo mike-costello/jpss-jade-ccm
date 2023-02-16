@@ -19,7 +19,8 @@ import org.apache.camel.CamelException;
 // camel-k: dependency=mvn:io.strimzi:kafka-oauth-common:0.10.0
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-kafka
 // camel-k: dependency=mvn:io.quarkus:quarkus-apicurio-registry-avro
-// camel-k: dependency=mvn:io.apicurio:apicurio-registry-serdes-avro-serde
+// comment-camel-k: dependency=mvn:io.apicurio:apicurio-registry-serdes-avro-serde
+// camel-k: dependency=mvn:io.confluent:kafka-avro-serializer:7.3.1
 
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
