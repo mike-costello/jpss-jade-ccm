@@ -13,7 +13,7 @@ env_lower=$(echo $1 | tr '[:upper:]' '[:lower:]')
 
 if [ "$env" = "DEV" ]; then
 elif [ "$env" = "TEST" ]; then
-elif [ "$1" = "PROD" ]; then
+elif [ "$env" = "PROD" ]; then
 else
     env=""
 fi
