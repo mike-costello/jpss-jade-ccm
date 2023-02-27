@@ -79,14 +79,13 @@ do
         integration_name=$(echo $integration_item | awk '{print $1}')
         echo "In use by $integration_name"
         keep_image_name=$image_name
-    else
     fi
   done
 
   if [ -z $keep_image_name ]; then
     ((deleted++))
     echo "$image_name is NOT in use; Deleting ..."
-    oc -n $ns delete is $image_name"
+    oc -n $ns delete is $image_name
   else
     echo "... skipping image stream."
   fi
