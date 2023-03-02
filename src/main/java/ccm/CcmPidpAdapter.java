@@ -20,7 +20,14 @@ import org.apache.camel.CamelException;
 // camel-k: dependency=mvn:org.apache.camel.quarkus:camel-quarkus-kafka
 // camel-k: dependency=mvn:io.quarkus:quarkus-apicurio-registry-avro
 // comment-camel-k: dependency=mvn:io.apicurio:apicurio-registry-serdes-avro-serde
-// camel-k: dependency=mvn:io.confluent:kafka-avro-serializer:7.3.1
+// camel-k: dependency=mvn:io.confluent:kafka-avro-serializer:5.3.2
+
+// Red Hat Maven Repos
+// https://maven.repository.redhat.com/ga
+// https://maven.repository.redhat.com/earlyaccess/all
+
+// Lee demo client's Kafka Avro Serializer version
+// https://mvnrepository.com/artifact/io.confluent/kafka-avro-serializer/7.3.1
 
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;

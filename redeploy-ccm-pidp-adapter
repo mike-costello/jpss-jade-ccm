@@ -27,8 +27,8 @@ if [ "$env" = "prod" ]; then
         return 1
     fi
 else
-    logging_level="DEBUG"
-    #logging_level="INFO"
+    #logging_level="DEBUG"
+    logging_level="INFO"
 fi
 
 echo "`basename $0` to $ns ..."
@@ -59,4 +59,14 @@ kamel -n $ns run \
 
 popd
 
+
+  # --resource file:../../../../tools/libs/kafka-avro-serializer-7.3.1.jar \
+  # --resource file:../../../../tools/libs/kafka-schema-serializer-7.3.1.jar \
+  # --resource file:../../../../tools/libs/kafka-schema-registry-client-7.3.1.jar \
+
 # kamel -n cef5dd-test log ccm-justin-adapter
+
+
+# [11] 2023-02-28 13:18:29,081 ERROR [io.qua.run.Application] (main) Failed to start application (with profile prod): java.lang.ClassNotFoundException: io.confluent.kafka.serializers.AbstractKafkaSchemaSerDe
+# [11] 	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:581)
+# [11] 	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:178)
