@@ -13,6 +13,7 @@ import java.net.SocketTimeoutException;
 // camel-k: dependency=mvn:org.apache.camel.quarkus
 // camel-k: dependency=mvn:org.apache.camel.camel-quarkus-kafka
 // camel-k: dependency=mvn:org.apache.camel.camel-quarkus-jsonpath
+// camel-k: dependency=mvn:org.apache.camel.camel-quarkus-direct
 // camel-k: dependency=mvn:org.apache.camel.camel-jackson
 // camel-k: dependency=mvn:org.apache.camel.camel-splunk-hec
 // camel-k: dependency=mvn:org.apache.camel.camel-http
@@ -20,14 +21,12 @@ import java.net.SocketTimeoutException;
 // camel-k: dependency=mvn:org.apache.camel.camel-http-common
 
 import java.util.Calendar;
-import java.util.List;
 
 import org.apache.camel.AggregationStrategy;
 import org.apache.camel.CamelException;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
-import org.apache.camel.builder.AggregationStrategies;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.model.dataformat.JsonLibrary;
@@ -38,8 +37,6 @@ import ccm.models.common.data.AuthUser;
 import ccm.models.common.data.AuthUserList;
 import ccm.models.common.event.BaseEvent;
 import ccm.models.common.event.EventKPI;
-import ccm.models.system.justin.JustinAuthUsersList;
-import ccm.models.system.pidp.PIDPAuthUserList;
 import ccm.utils.DateTimeUtils;
 
 public class CcmLookupService extends RouteBuilder {
@@ -274,7 +271,7 @@ public class CcmLookupService extends RouteBuilder {
         if (oldExchange != null) {
           String bodyData = oldExchange.getIn().getBody(String.class);
           log.info("Old exchange body: "+bodyData);
-          if(bodyData != null) {
+          /*if(bodyData != null) {
             try {
               AuthUserList justinUserList = null;
               if(bodyData.startsWith("{")) {
@@ -294,7 +291,7 @@ public class CcmLookupService extends RouteBuilder {
             } catch(Exception ex) {
               ex.printStackTrace();
             }
-          }
+          }*/
         } else {
           log.info("oldExchange was null, so skipped.");
         }
@@ -371,15 +368,28 @@ public class CcmLookupService extends RouteBuilder {
     
   }
 
+
   private void getJustinAuthUserList() {
     String routeId = new Object() {}.getClass().getEnclosingMethod().getName();
+    AuthUserList outUserList = new AuthUserList();
+
     from("platform-http:/" + routeId)
     .routeId(routeId)
     .streamCaching() // https://camel.apache.org/manual/faq/why-is-my-message-body-empty.html
-    .log(LoggingLevel.INFO, "Calling getJustinAuthUserList")
     .to("http://ccm-justin-adapter/getCourtCaseAuthList")
-    .log(LoggingLevel.INFO,"response from JUSTIN: ${body}")
-    ;
+    .log(LoggingLevel.DEBUG,"response from JUSTIN: ${body}")
+    .choice()
+      .when().simple("${header.CamelHttpResponseCode} == 200")
+        .unmarshal().json(JsonLibrary.Jackson,AuthUserList.class)
+        .process(new Processor() {
+          @Override
+          public void process(Exchange exchange) {
+            AuthUserList jal = exchange.getIn().getBody(AuthUserList.class);
+            outUserList.getAuth_user_list().addAll(jal.getAuth_user_list());
+            exchange.getMessage().setBody(outUserList , AuthUserList.class);
+
+        }})
+      .end();
   }
 
   private void getPidpAuthUserList() {
@@ -399,6 +409,21 @@ public class CcmLookupService extends RouteBuilder {
       public void process(Exchange exchange) {
         AuthUserList authList = new AuthUserList();
         authList.setRcc_id(exchange.getMessage().getHeader("number", String.class));
+        //,{"part_id":"11429.0026","jrs_role":"JRS_SYSTEM_SUPPORT","key":"11429.0026","role":"JRS_SYSTEM_SUPPORT"}
+        //,{"part_id":"122203.0734","jrs_role":"JRS_BASE_LAWYER","key":"122203.0734","role":"JRS_BASE_LAWYER"}]
+        AuthUser authUser = new AuthUser();
+        authUser.setPart_id("11429.0026");
+        authUser.setJrs_role("JRS_BASE_LAWYER");
+        authUser.setKey("11429.0026");
+        authUser.setRole("JRS_BASE_LAWYER");
+        authList.getAuth_user_list().add(authUser);
+        exchange.getMessage().setBody(authList , AuthUserList.class);
+        AuthUser authUser2 = new AuthUser();
+        authUser2.setPart_id("11429.0026");
+        authUser2.setJrs_role("JRS_SYSTEM_SUPPORT");
+        authUser2.setKey("11429.0026");
+        authUser2.setRole("JRS_SYSTEM_SUPPORT");
+        authList.getAuth_user_list().add(authUser2);
         exchange.getMessage().setBody(authList , AuthUserList.class);
       }
     })
